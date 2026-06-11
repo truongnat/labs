@@ -1,65 +1,263 @@
-// Bài 89: docker-compose.yml cho Node.js app với MongoDB + Redis
+# ============================================================
+# docker-compose.yml - Chạy Node.js App + MongoDB + Redis
+# ============================================================
+# File này dùng để chạy nhiều service cùng lúc
+# Chạy lệnh: docker-compose up -d
+# Dừng: docker-compose down
 
-// docker-compose.yml
-/*
+# ============================================================
+# version: '3.8'
+# ============================================================
+# Khai báo version của docker-compose
+# Version 3.8 hỗ trợ các tính năng hiện đại như depends_on, volumes
 version: '3.8'
 
+# ============================================================
+# services
+# ============================================================
+# Phần này định nghĩa các container sẽ được chạy
+# Mỗi service là một container riêng biệt
 services:
-  # Node.js Application
+
+  # ============================================================
+  # Service: app (Node.js Application)
+  # ============================================================
+  # Đây là container chạy ứng dụng Node.js của chúng ta
   app:
+
+    # build: .
+    # -------------------------
+    # Build Docker image từ Dockerfile trong thư mục hiện tại (.)
+    # Dấu "." nghĩa là tìm Dockerfile ở thư mục hiện tại
     build: .
+
+    # ports:
+    # -------------------------
+    # Port mapping: port_bên_ngoài:port_bên_trong_container
+    # "3000:3000" nghĩa là port 3000 trên máy host ánh xạ tới port 3000 trong container
+    # Khi truy cập http://localhost:3000 sẽ vào app trong container
     ports:
       - "3000:3000"
+
+    # environment:
+    # -------------------------
+    # Biến môi trường truyền vào container
+    # Các biến này được app đọc qua process.env trong Node.js
     environment:
+      # NODE_ENV=development
+      # -------------------------
+      # Khai báo môi trường chạy là development
+      # App có thể dùng biến này để bật/tắt debug, log chi tiết
       - NODE_ENV=development
+
+      # MONGODB_URI=mongodb://mongodb:27017/myapp
+      # -------------------------
+      # Connection string tới MongoDB
+      # mongodb://mongodb:27017/myapp
+      #   - mongodb: tên service MongoDB bên dưới (docker tự resolve DNS)
+      #   - 27017: port mặc định của MongoDB
+      #   - myapp: tên database
       - MONGODB_URI=mongodb://mongodb:27017/myapp
+
+      # REDIS_URL=redis://redis:6379
+      # -------------------------
+      # Connection string tới Redis
+      # redis://redis:6379
+      #   - redis: tên service Redis bên dưới
+      #   - 6379: port mặc định của Redis
       - REDIS_URL=redis://redis:6379
+
+    # depends_on:
+    # -------------------------
+    # Khai báo dependencies
+    # Container app sẽ được tạo sau các service này
+    # Lưu ý: depends_on chỉ đảm bảo container chạy trước, không đảm bảo service đã sẵn sàng
     depends_on:
+      # mongodb phải chạy trước
       - mongodb
+      # redis phải chạy trước
       - redis
+
+    # volumes:
+    # -------------------------
+    # Mount thư mục từ host vào container
+    # Giúp code thay đổi trên host sẽ tự động cập nhật trong container
     volumes:
+      # .:/app
+      # -------------------------
+      # Mount thư mục hiện tại (.) từ host vào /app trong container
+      # Dấu : ngăn cách path_host:path_container
       - .:/app
+
+      # /app/node_modules
+      # -------------------------
+      # Mount volume rỗng cho node_modules
+      # Mục đích: tránh ghi đè node_modules trong container bằng node_modules từ host
+      # (vì host có thể là macOS/Windows, node_modules không tương thích)
       - /app/node_modules
+
+    # command: npm run dev
+    # -------------------------
+    # Override command mặc định trong Dockerfile
+    # Chạy npm run dev thay vì npm start
+    # npm run dev thường dùng nodemon để auto-reload khi code thay đổi
     command: npm run dev
 
-  # MongoDB Database
+  # ============================================================
+  # Service: mongodb (MongoDB Database)
+  # ============================================================
+  # Container chạy MongoDB database
   mongodb:
+
+    # image: mongo:7
+    # -------------------------
+    # Sử dụng Docker image chính thức của MongoDB
+    # Số 7 là version của MongoDB (MongoDB 7.x)
+    # Docker sẽ tự động pull image từ Docker Hub nếu chưa có
     image: mongo:7
+
+    # ports:
+    # -------------------------
+    # Expose port MongoDB ra ngoài
+    # "27017:27017" cho phép truy cập MongoDB từ máy host
     ports:
       - "27017:27017"
+
+    # environment:
+    # -------------------------
+    # Biến môi trường cho MongoDB container
     environment:
+      # MONGO_INITDB_ROOT_USERNAME=admin
+      # -------------------------
+      # Tên user admin mặc định khi khởi tạo MongoDB lần đầu
+      # Chỉ có tác dụng khi database mới được tạo
       - MONGO_INITDB_ROOT_USERNAME=admin
+
+      # MONGO_INITDB_ROOT_PASSWORD=password
+      # -------------------------
+      # Password cho user admin
+      # Lưu ý: Trong production không dùng password mặc định như này
       - MONGO_INITDB_ROOT_PASSWORD=password
+
+    # volumes:
+    # -------------------------
+    # Persist data - lưu dữ liệu MongoDB ra volume
+    # Nếu không có volume, dữ liệu sẽ mất khi container bị xóa
     volumes:
+      # mongodb_data:/data/db
+      # -------------------------
+      # Mount named volume "mongodb_data" vào thư mục dữ liệu của MongoDB
+      # /data/db là nơi MongoDB lưu trữ data
       - mongodb_data:/data/db
 
-  # Redis Cache
+  # ============================================================
+  # Service: redis (Redis Cache)
+  # ============================================================
+  # Container chạy Redis cache server
   redis:
+
+    # image: redis:7-alpine
+    # -------------------------
+    # Sử dụng Docker image Redis version 7
+    # "alpine" là bản dựa trên Alpine Linux - nhẹ hơn nhiều
+    # Alpine image thường nhỏ hơn 10-20 lần so với bản thường
     image: redis:7-alpine
+
+    # ports:
+    # -------------------------
+    # Expose port Redis ra ngoài
+    # "6379:6379" cho phép truy cập Redis từ máy host
     ports:
       - "6379:6379"
+
+    # volumes:
+    # -------------------------
+    # Persist data - lưu dữ liệu Redis ra volume
+    # Nếu không có volume, cache sẽ mất khi container bị xóa
     volumes:
+      # redis_data:/data
+      # -------------------------
+      # Mount named volume "redis_data" vào /data
+      # Redis mặc định lưu data trong /data
       - redis_data:/data
 
-  # Mongo Express (MongoDB admin UI)
+  # ============================================================
+  # Service: mongo-express (MongoDB Admin UI)
+  # ============================================================
+  # Web UI để quản lý MongoDB qua trình duyệt
+  # Giúp xem database, collection, document dễ dàng
   mongo-express:
+
+    # image: mongo-express
+    # -------------------------
+    # Sử dụng Docker image mongo-express
+    # Đây là giao diện web để quản lý MongoDB
     image: mongo-express
+
+    # ports:
+    # -------------------------
+    # Expose port của mongo-express ra ngoài
+    # "8081:8081" - truy cập tại http://localhost:8081
     ports:
       - "8081:8081"
+
+    # environment:
+    # -------------------------
+    # Biến môi trường cấu hình kết nối tới MongoDB
     environment:
+      # ME_MONGODB_URL=mongodb://admin:password@mongodb:27017/
+      # -------------------------
+      # Connection string cho mongo-express kết nối tới MongoDB
+      # mongodb://admin:password@mongodb:27017/
+      #   - admin: user admin (trùng với MONGO_INITDB_ROOT_USERNAME)
+      #   - password: password (trùng với MONGO_INITDB_ROOT_PASSWORD)
+      #   - mongodb: tên service MongoDB (docker DNS tự resolve)
+      #   - 27017: port MongoDB
       - ME_MONGODB_URL=mongodb://admin:password@mongodb:27017/
+
+    # depends_on:
+    # -------------------------
+    # mongo-express cần MongoDB chạy trước
     depends_on:
       - mongodb
 
+# ============================================================
+# volumes
+# ============================================================
+# Khai báo named volumes ở đây
+# Named volume được Docker quản lý, tồn tại độc lập với container
+# Dữ liệu trong volume không bị mất khi container bị xóa
 volumes:
+  # mongodb_data:
+  # -------------------------
+  # Volume lưu dữ liệu MongoDB
   mongodb_data:
-  redis_data:
-*/
 
-// Cách chạy:
-// docker-compose up -d
-// Truy cập:
-// - App: http://localhost:3000
-// - Mongo Express: http://localhost:8081
-// - MongoDB: mongodb://localhost:27017
-// - Redis: redis://localhost:6379
+  # redis_data:
+  # -------------------------
+  # Volume lưu dữ liệu Redis
+  redis_data:
+
+# ============================================================
+# Cách sử dụng:
+# ============================================================
+# 1. Build và chạy tất cả service:
+#    docker-compose up -d
+#
+# 2. Xem logs:
+#    docker-compose logs -f
+#
+# 3. Xem logs của một service cụ thể:
+#    docker-compose logs -f app
+#
+# 4. Dừng tất cả service:
+#    docker-compose down
+#
+# 5. Dừng và xóa volumes (xóa dữ liệu):
+#    docker-compose down -v
+#
+# 6. Truy cập:
+#    - Node.js App: http://localhost:3000
+#    - Mongo Express: http://localhost:8081
+#    - MongoDB: mongodb://localhost:27017
+#    - Redis: redis://localhost:6379

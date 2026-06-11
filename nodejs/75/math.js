@@ -1,5 +1,4 @@
-// Bài 75: Hàm tiện ích cần unit test
-// File này chứa logic thuần — tách riêng khỏi test để dễ mock và tái sử dụng
+// Math utility functions - file dùng để test
 
 function add(a, b) {
     return a + b;
