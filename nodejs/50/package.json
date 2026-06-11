@@ -1,0 +1,14 @@
+{
+  "name": "bai-50-swagger",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Bài 50: Swagger OpenAPI docs",
+  "main": "swagger-docs.js",
+  "scripts": {
+    "start": "node swagger-docs.js"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "swagger-ui-express": "^5.0.1"
+  }
+}

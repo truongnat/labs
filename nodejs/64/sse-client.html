@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>SSE Client - Bài 64</title>
+    <style>
+        body { font-family: system-ui; max-width: 600px; margin: 2rem auto; padding: 0 1rem; }
+        #status { padding: 0.5rem; border-radius: 4px; margin-bottom: 1rem; }
+        .connected { background: #d4edda; }
+        .disconnected { background: #f8d7da; }
+        #events { border: 1px solid #ddd; padding: 1rem; height: 300px; overflow-y: auto; }
+        .event { padding: 0.5rem; border-bottom: 1px solid #eee; font-size: 14px; }
+    </style>
+</head>
+<body>
+    <h1>Server-Sent Events Demo</h1>
+    <div id="status" class="disconnected">Đang kết nối...</div>
+    <button onclick="connect()">Reconnect</button>
+    <button onclick="fetch('/notify')">Gửi thông báo test</button>
+    <div id="events"></div>
+
+    <script>
+        let source;
+
+        function addEvent(type, data) {
+            const div = document.createElement('div');
+            div.className = 'event';
+            div.textContent = `[${type}] ${JSON.stringify(data)}`;
+            document.getElementById('events').prepend(div);
+        }
+
+        function connect() {
+            if (source) source.close();
+
+            // EventSource tự reconnect khi mất kết nối
+            source = new EventSource('/events');
+
+            source.onopen = () => {
+                document.getElementById('status').textContent = 'Đã kết nối SSE';
+                document.getElementById('status').className = 'connected';
+            };
+
+            source.onerror = () => {
+                document.getElementById('status').textContent = 'Mất kết nối - đang reconnect...';
+                document.getElementById('status').className = 'disconnected';
+            };
+
+            source.addEventListener('welcome', (e) => addEvent('welcome', JSON.parse(e.data)));
+            source.addEventListener('tick', (e) => addEvent('tick', JSON.parse(e.data)));
+            source.addEventListener('notification', (e) => addEvent('notification', JSON.parse(e.data)));
+        }
+
+        connect();
+    </script>
+</body>
+</html>

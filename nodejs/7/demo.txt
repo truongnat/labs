@@ -1,0 +1,5 @@
+# Hello 7
+
+function total(a, b) {
+    return a + b
+}

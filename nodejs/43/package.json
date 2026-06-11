@@ -1,0 +1,14 @@
+{
+  "name": "bai-43-refresh-token",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Bài 43: Refresh + Access token flow",
+  "main": "refresh-token-flow.js",
+  "scripts": {
+    "start": "node refresh-token-flow.js"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "jsonwebtoken": "^9.0.2"
+  }
+}

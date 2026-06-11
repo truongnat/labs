@@ -1,0 +1,54 @@
+# Bài 87: Filebeat config — ship log Node.js JSON tới ELK Stack
+# Filebeat đọc file log → gửi Elasticsearch (qua Logstash hoặc trực tiếp)
+#
+# Cài đặt:
+#   curl -L -O https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-8.12.0-darwin-aarch64.tar.gz
+#   ./filebeat -e -c 87/filebeat-elk.yml
+#
+# Stack ELK (docker-compose):
+#   docker run -d --name elasticsearch -p 9200:9200 -e "discovery.type=single-node" elasticsearch:8.12.0
+#   docker run -d --name kibana -p 5601:5601 -e "ELASTICSEARCH_HOSTS=http://host.docker.internal:9200" kibana:8.12.0
+
+filebeat.inputs:
+  - type: log
+    enabled: true
+    paths:
+      - /var/log/nodejs/*.log          # File log JSON từ app
+      - ./logs/app.log                 # Hoặc path local khi dev
+    json.keys_under_root: true          # Parse JSON log thành fields
+    json.add_error_key: true
+    fields:
+      service: nodejs-labs
+      environment: development
+    fields_under_root: true
+
+# Gửi qua Logstash (khuyến nghị — transform/filter tại đây)
+output.logstash:
+  hosts: ["localhost:5044"]
+
+# Hoặc gửi trực tiếp Elasticsearch:
+# output.elasticsearch:
+#   hosts: ["localhost:9200"]
+#   index: "nodejs-logs-%{+yyyy.MM.dd}"
+
+# Kibana dashboard
+setup.kibana:
+  host: "localhost:5601"
+
+# ILM — tự động xoay/xóa log cũ
+setup.ilm.enabled: true
+setup.ilm.rollover_alias: "nodejs-logs"
+
+processors:
+  - add_host_metadata: ~
+  - add_cloud_metadata: ~
+  - drop_fields:
+      fields: ["agent.ephemeral_id", "agent.id"]
+      ignore_missing: true
+
+logging.level: info
+logging.to_files: true
+logging.files:
+  path: /var/log/filebeat
+  name: filebeat
+  keepfiles: 3

@@ -1,0 +1,65 @@
+// Bài 89: docker-compose.yml cho Node.js app với MongoDB + Redis
+
+// docker-compose.yml
+/*
+version: '3.8'
+
+services:
+  # Node.js Application
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - MONGODB_URI=mongodb://mongodb:27017/myapp
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - mongodb
+      - redis
+    volumes:
+      - .:/app
+      - /app/node_modules
+    command: npm run dev
+
+  # MongoDB Database
+  mongodb:
+    image: mongo:7
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=password
+    volumes:
+      - mongodb_data:/data/db
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+  # Mongo Express (MongoDB admin UI)
+  mongo-express:
+    image: mongo-express
+    ports:
+      - "8081:8081"
+    environment:
+      - ME_MONGODB_URL=mongodb://admin:password@mongodb:27017/
+    depends_on:
+      - mongodb
+
+volumes:
+  mongodb_data:
+  redis_data:
+*/
+
+// Cách chạy:
+// docker-compose up -d
+// Truy cập:
+// - App: http://localhost:3000
+// - Mongo Express: http://localhost:8081
+// - MongoDB: mongodb://localhost:27017
+// - Redis: redis://localhost:6379

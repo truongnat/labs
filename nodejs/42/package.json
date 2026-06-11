@@ -1,0 +1,15 @@
+{
+  "name": "bai-42-httponly-cookies",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Bài 42: cookie-parser HttpOnly cookies",
+  "main": "httponly-cookies.js",
+  "scripts": {
+    "start": "node httponly-cookies.js"
+  },
+  "dependencies": {
+    "cookie-parser": "^1.4.7",
+    "express": "^4.21.2",
+    "jsonwebtoken": "^9.0.2"
+  }
+}

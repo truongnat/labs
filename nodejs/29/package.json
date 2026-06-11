@@ -1,0 +1,14 @@
+{
+  "name": "bai-29-cors",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Bài 29: CORS handler",
+  "main": "cors-handler.js",
+  "scripts": {
+    "start": "node cors-handler.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.21.2"
+  }
+}

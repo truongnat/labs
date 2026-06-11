@@ -1,0 +1,14 @@
+{
+  "name": "bai-49-nodemailer",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Bài 49: Nodemailer email verification mock",
+  "main": "email-verification.js",
+  "scripts": {
+    "start": "node email-verification.js"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "nodemailer": "^6.9.16"
+  }
+}

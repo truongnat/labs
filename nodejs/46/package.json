@@ -1,0 +1,14 @@
+{
+  "name": "bai-46-zod-validation",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Bài 46: Zod input validation",
+  "main": "zod-validation.js",
+  "scripts": {
+    "start": "node zod-validation.js"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "zod": "^3.24.1"
+  }
+}

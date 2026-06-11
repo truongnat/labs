@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <title>SSE Demo - Theo dõi giá Coin</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f4f4f9;
+        }
+
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        #price {
+            font-size: 2em;
+            color: #2ecc71;
+            font-weight: bold;
+        }
+
+        #alert-box {
+            color: #e74c3c;
+            font-weight: bold;
+            min-height: 24px;
+        }
+
+        .log {
+            font-family: monospace;
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 10px;
+            max-height: 200px;
+            overflow-y: auto;
+            border-radius: 5px;
+        }
+
+        .status {
+            padding: 5px 10px;
+            border-radius: 4px;
+            color: white;
+            display: inline-block;
+        }
+
+        .connected {
+            background: #2ecc71;
+        }
+
+        .disconnected {
+            background: #e74c3c;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h2>📊 Realtime Crypto Tracker (SSE Demo)</h2>
+    <p>Trạng thái: <span id="status" class="status disconnected">Đang kết nối...</span></p>
+
+    <div class="card">
+        <h3>Giá Bitcoin (BTC)</h3>
+        <div id="price">Đang tải...</div>
+    </div>
+
+    <div class="card">
+        <h3>🚨 Cảnh báo Cá mập (Custom Event)</h3>
+        <div id="alert-box">Chờ tín hiệu...</div>
+    </div>
+
+    <div class="card">
+        <h3>📜 Console Log (Mô phỏng)</h3>
+        <div id="logs" class="log"></div>
+    </div>
+
+    <script>
+        // 1. Khởi tạo kết nối SSE
+        const source = new EventSource('/events');
+        const statusEl = document.getElementById('status');
+        const priceEl = document.getElementById('price');
+        const alertEl = document.getElementById('alert-box');
+        const logsEl = document.getElementById('logs');
+
+        function addLog(text) {
+            const time = new Date().toLocaleTimeString();
+            logsEl.innerHTML += `<div>[${time}] ${text}</div>`;
+            logsEl.scrollTop = logsEl.scrollHeight; // Tự cuộn xuống cuối
+        }
+
+        // 2. Lắng nghe trạng thái kết nối
+        source.onopen = () => {
+            statusEl.textContent = 'Đã kết nối (Realtime)';
+            statusEl.className = 'status connected';
+            addLog('✅ Kết nối SSE thành công!');
+        };
+
+        source.onerror = (err) => {
+            statusEl.textContent = 'Mất kết nối (Đang tự động Reconnect...)';
+            statusEl.className = 'status disconnected';
+            addLog('❌ Mất kết nối. Trình duyệt sẽ tự thử lại sau 3 giây...');
+        };
+
+        // 3. Lắng nghe Message mặc định (Giá Coin)
+        // Server gửi: "data: {...}\n\n"
+        source.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            priceEl.textContent = `$${data.price}`;
+            addLog(`📈 Nhận giá mới (ID: ${event.lastEventId}): $${data.price}`);
+        };
+
+        // 4. Lắng nghe Custom Event (Cảnh báo Cá mập)
+        // Server gửi: "event: whale_alert\ndata: {...}\n\n"
+        source.addEventListener('whale_alert', (event) => {
+            const data = JSON.parse(event.data);
+            alertEl.textContent = `🚨 ${data.msg}`;
+            alertEl.style.animation = 'none'; // Reset animation
+            setTimeout(() => alertEl.style.animation = 'blink 1s 3', 10);
+            addLog(`🚨 CẢNH BÁO: ${data.msg}`);
+        });
+    </script>
+</body>
+
+</html>

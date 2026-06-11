@@ -1,0 +1,14 @@
+{
+  "name": "bai-30-helmet",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Bài 30: helmet security headers",
+  "main": "helmet-security.js",
+  "scripts": {
+    "start": "node helmet-security.js"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "helmet": "^8.0.0"
+  }
+}

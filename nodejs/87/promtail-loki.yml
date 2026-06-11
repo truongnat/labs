@@ -1,0 +1,57 @@
+# Bài 87: Promtail config — ship log tới Grafana Loki
+# Promtail là agent thu thập log, Loki lưu trữ (nhẹ hơn ELK)
+#
+# Chạy Loki + Promtail + Grafana:
+#   docker compose -f 87/docker-loki-stack.yml up -d
+#
+# Hoặc standalone:
+#   docker run -d --name loki -p 3100:3100 grafana/loki:2.9.0
+#   promtail -config.file=87/promtail-loki.yml
+
+server:
+  http_listen_port: 9080
+  grpc_listen_port: 0
+
+positions:
+  filename: /tmp/positions.yaml
+
+clients:
+  - url: http://localhost:3100/loki/api/v1/push
+    # basic_auth:
+    #   username: admin
+    #   password: secret
+
+scrape_configs:
+  # Scrape file log JSON từ Node.js app
+  - job_name: nodejs-app
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: nodejs-labs
+          env: development
+          __path__: /var/log/nodejs/*.log
+
+  # Scrape log từ systemd journal (production Linux)
+  - job_name: journal
+    journal:
+      max_age: 12h
+      labels:
+        job: systemd-journal
+    relabel_configs:
+      - source_labels: ['__journal__systemd_unit']
+        target_label: unit
+
+  # Pipeline — parse JSON log fields
+pipeline_stages:
+  - json:
+      expressions:
+        level: level
+        msg: msg
+        requestId: requestId
+        durationMs: durationMs
+  - labels:
+      level:
+  - timestamp:
+      source: time
+      format: RFC3339

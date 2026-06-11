@@ -1,0 +1,14 @@
+{
+  "name": "bai-41-rbac",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Bài 41: RBAC admin vs user",
+  "main": "rbac-roles.js",
+  "scripts": {
+    "start": "node rbac-roles.js"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "jsonwebtoken": "^9.0.2"
+  }
+}

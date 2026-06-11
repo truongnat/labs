@@ -1,0 +1,14 @@
+{
+  "name": "bai-47-multer-upload",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Bài 47: Multer local file upload",
+  "main": "multer-upload.js",
+  "scripts": {
+    "start": "node multer-upload.js"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "multer": "^1.4.5-lts.1"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "name": "bai-35-postgres-demo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Bài 35: PostgreSQL pg pattern demo với SQLite",
+  "main": "postgres-connect.js",
+  "scripts": {
+    "start": "node postgres-connect.js"
+  },
+  "dependencies": {
+    "better-sqlite3": "^11.7.0"
+  }
+}

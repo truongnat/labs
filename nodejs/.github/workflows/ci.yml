@@ -1,0 +1,82 @@
+# Bài 90: GitHub Actions CI — tự động test khi push/PR
+# Repo: nodejs-master-100-exercises
+# Badge: ![CI](https://github.com/USER/REPO/actions/workflows/ci.yml/badge.svg)
+
+name: Node.js CI
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - 'nodejs/**'
+      - '.github/workflows/ci.yml'
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - 'nodejs/**'
+
+defaults:
+  run:
+    working-directory: nodejs
+
+jobs:
+  test:
+    name: Test (Node ${{ matrix.node-version }})
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: [18, 20, 22]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: npm
+          cache-dependency-path: nodejs/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci || npm install
+
+      - name: Run unit tests
+        run: npx jest --passWithNoTests --coverage --coverageReporters=text-summary
+
+      - name: Upload coverage
+        if: matrix.node-version == 20
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: nodejs/coverage/
+          retention-days: 7
+
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: nodejs/package-lock.json
+      - run: npm ci || npm install
+        working-directory: nodejs
+      - name: ESLint
+        run: npx eslint . --ext .js || echo "ESLint chưa cấu hình — bỏ qua"
+        working-directory: nodejs
+
+  security:
+    name: Security Audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm audit --audit-level=high || true
+        working-directory: nodejs

@@ -1,0 +1,16 @@
+{
+  "name": "bai-44-oauth-passport",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Bài 44: OAuth2 Passport demo mock",
+  "main": "oauth-passport.js",
+  "scripts": {
+    "start": "node oauth-passport.js"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "express-session": "^1.18.1",
+    "passport": "^0.7.0",
+    "passport-oauth2": "^1.8.0"
+  }
+}
